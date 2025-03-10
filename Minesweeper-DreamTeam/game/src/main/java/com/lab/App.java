@@ -2,13 +2,8 @@ package com.lab;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -23,9 +18,15 @@ public class App extends Application {
     private Minesweeper game;
     private Button[][] buttons;
     private int gridSize;
+    private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        initializeGame();
+    }
+
+    private void initializeGame() {
         List<String> choices = Arrays.asList("5x5", "9x9", "15x15", "Load from file");
         ChoiceDialog<String> dialog = new ChoiceDialog<>("9x9", choices);
         dialog.setTitle("Select Minefield Size");
@@ -66,7 +67,7 @@ public class App extends Application {
                     gridSize = 15;
                     break;
                 case "Load from file":
-                    game = new Minesweeper("minefield.txt"); // Default file name
+                    game = new Minesweeper("minefield01.txt"); // Default file name
                     gridSize = game.fieldX;
                     break;
                 default:
@@ -78,9 +79,13 @@ public class App extends Application {
             gridSize = 9;
         }
 
+        setupGameBoard();
+    }
+
+    private void setupGameBoard() {
         GridPane grid = new GridPane();
         buttons = new Button[gridSize][gridSize];
-        
+
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
                 Button button = new Button(" ");
@@ -91,18 +96,18 @@ public class App extends Application {
                 grid.add(button, j, i);
             }
         }
-        
+
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
         MenuItem saveGame = new MenuItem("Save Game");
         saveGame.setOnAction(e -> saveGameToFile("saved_game.txt"));
         fileMenu.getItems().add(saveGame);
         menuBar.getMenus().add(fileMenu);
-        
+
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
         root.setCenter(grid);
-        
+
         Scene scene = new Scene(root, gridSize * 40, gridSize * 40 + 30);
         primaryStage.setTitle("Minesweeper");
         primaryStage.setScene(scene);
@@ -118,6 +123,7 @@ public class App extends Application {
             alert.setHeaderText(null);
             alert.setContentText("You hit a mine! Game Over.");
             alert.showAndWait();
+            initializeGame(); // Restart game selection after losing
         } else {
             buttons[x][y].setText(".");
             buttons[x][y].setStyle("-fx-background-color: lightgray;");
